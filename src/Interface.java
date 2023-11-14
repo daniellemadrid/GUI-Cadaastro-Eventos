@@ -93,7 +93,6 @@ public class Interface extends JFrame {
             }
 
             eventos.add(new Evento(codigo, data, latitude, longitude));
-            Collections.sort(eventos, Comparator.comparing(Evento::getCodigo));
             mensagemArea.setText("Evento cadastrado com sucesso.");
         } catch (ParseException e) {
             mensagemArea.setText("Erro: Formato de data inválido. Utilize o formato dd/MM/yyyy.");
