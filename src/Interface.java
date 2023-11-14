@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -72,30 +73,39 @@ public class Interface extends JFrame {
 
     private void cadastrarEvento() {
         String codigo = codigoField.getText();
-        String data = dataField.getText();
         double latitude, longitude;
+        String dataRaw = dataField.getText();
 
         try {
             latitude = Double.parseDouble(latitudeField.getText());
             longitude = Double.parseDouble(longitudeField.getText());
 
-            if (codigo.isEmpty() || data.isEmpty()) {
+            if (codigo.isEmpty() || dataRaw.isEmpty()) {
                 throw new IllegalArgumentException("Código e Data são obrigatórios.");
             }
 
-            if (eventos.stream().anyMatch(evento -> codigo.equals(evento.getCodigo()))) {
+            String codigoSemZeros = codigo.replaceFirst("^0+(?!$)", "");
+            java.util.Date dataUtil = new java.text.SimpleDateFormat("dd/MM/yyyy").parse(dataRaw);
+            String data = new java.text.SimpleDateFormat("dd/MM/yyyy").format(dataUtil);
+
+            if (eventos.stream().anyMatch(evento -> codigoSemZeros.equals(evento.getCodigo()))) {
                 throw new IllegalArgumentException("Já existe um evento com o código indicado.");
             }
 
             eventos.add(new Evento(codigo, data, latitude, longitude));
             Collections.sort(eventos, Comparator.comparing(Evento::getCodigo));
             mensagemArea.setText("Evento cadastrado com sucesso.");
+        } catch (ParseException e) {
+            mensagemArea.setText("Erro: Formato de data inválido. Utilize o formato dd/MM/yyyy.");
         } catch (NumberFormatException ex) {
             mensagemArea.setText("Erro: Latitude e Longitude devem ser valores numéricos.");
         } catch (IllegalArgumentException ex) {
             mensagemArea.setText("Erro: " + ex.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
+
 
     private void limparCampos() {
         codigoField.setText("");
