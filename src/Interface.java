@@ -119,13 +119,6 @@ public class Interface extends JFrame {
         }
     }
 
-
-
-
-
-
-
-
     private void limparCampos() {
         codigoField.setText("");
         dataField.setText("");
@@ -152,10 +145,6 @@ public class Interface extends JFrame {
 
     private void finalizar() {
         System.exit(0);
-    }
-
-    private boolean isCodigoValido(String codigo) {
-        return codigo.matches("^\\d+$");
     }
 
 }
