@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,55 +23,45 @@ public class Interface extends JFrame {
         JScrollPane scrollPane = new JScrollPane(mensagemArea);
 
         JButton cadastrarButton = new JButton("Cadastrar");
-        cadastrarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cadastrarEvento();
-            }
-        });
+        cadastrarButton.addActionListener(e -> cadastrarEvento());
 
         JButton limparButton = new JButton("Limpar");
-        limparButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                limparCampos();
-            }
-        });
+        limparButton.addActionListener(e -> limparCampos());
 
         JButton mostrarDadosButton = new JButton("Mostrar Dados");
-        mostrarDadosButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mostrarDadosCadastrados();
-            }
-        });
+        mostrarDadosButton.addActionListener(e -> mostrarDadosCadastrados());
 
         JButton finalizarButton = new JButton("Finalizar");
-        finalizarButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                finalizar();
-            }
-        });
+        finalizarButton.addActionListener(e -> finalizar());
 
-        JPanel panel = new JPanel(new GridLayout(7, 2, 5, 5));
-        panel.add(new JLabel("Código:"));
-        panel.add(codigoField);
-        panel.add(new JLabel("Data:"));
-        panel.add(dataField);
-        panel.add(new JLabel("Latitude:"));
-        panel.add(latitudeField);
-        panel.add(new JLabel("Longitude:"));
-        panel.add(longitudeField);
-        panel.add(new JLabel());
-        panel.add(cadastrarButton);
-        panel.add(limparButton);
-        panel.add(mostrarDadosButton);
-        panel.add(finalizarButton);
+        codigoField.addActionListener(e -> dataField.requestFocusInWindow());
+        dataField.addActionListener(e -> latitudeField.requestFocusInWindow());
+        latitudeField.addActionListener(e -> longitudeField.requestFocusInWindow());
+        longitudeField.addActionListener(e -> cadastrarEvento());
+
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 5, 5));
+        inputPanel.add(new JLabel("Código:"));
+        inputPanel.add(codigoField);
+        inputPanel.add(new JLabel("Data:"));
+        inputPanel.add(dataField);
+        inputPanel.add(new JLabel("Latitude:"));
+        inputPanel.add(latitudeField);
+        inputPanel.add(new JLabel("Longitude:"));
+        inputPanel.add(longitudeField);
+
+        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+        buttonPanel.add(cadastrarButton);
+        buttonPanel.add(limparButton);
+        buttonPanel.add(mostrarDadosButton);
+        buttonPanel.add(finalizarButton);
+
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.add(inputPanel, BorderLayout.WEST);
+        panel.add(buttonPanel, BorderLayout.CENTER);
 
         Container container = getContentPane();
         container.setLayout(new BorderLayout(5, 5));
-        container.add(panel, BorderLayout.WEST);
+        container.add(panel, BorderLayout.NORTH);
         container.add(scrollPane, BorderLayout.CENTER);
 
         setSize(400, 300);
@@ -85,18 +73,18 @@ public class Interface extends JFrame {
     private void cadastrarEvento() {
         String codigo = codigoField.getText();
         String data = dataField.getText();
-        double latitude = Double.parseDouble(latitudeField.getText());
-        double longitude = Double.parseDouble(longitudeField.getText());
+        double latitude, longitude;
 
         try {
+            latitude = Double.parseDouble(latitudeField.getText());
+            longitude = Double.parseDouble(longitudeField.getText());
+
             if (codigo.isEmpty() || data.isEmpty()) {
                 throw new IllegalArgumentException("Código e Data são obrigatórios.");
             }
 
-            for (Evento evento : eventos) {
-                if (codigo.equals(evento.getCodigo())) {
-                    throw new IllegalArgumentException("Já existe um evento com o código indicado.");
-                }
+            if (eventos.stream().anyMatch(evento -> codigo.equals(evento.getCodigo()))) {
+                throw new IllegalArgumentException("Já existe um evento com o código indicado.");
             }
 
             eventos.add(new Evento(codigo, data, latitude, longitude));
@@ -124,7 +112,7 @@ public class Interface extends JFrame {
             StringBuilder eventosString = new StringBuilder();
             for (Evento evento : eventos) {
                 eventosString.append(String.format(
-                        "\nCodinome: %s\nQuantidade: %s\nLatitude: %s\nLongitude: %s\n",
+                        "\nCódigo: %s\nData: %s\nLatitude: %s\nLongitude: %s\n",
                         evento.getCodigo(), evento.getData(), evento.getLatitude(), evento.getLongitude()));
             }
             mensagemArea.setText(eventosString.toString());
@@ -133,14 +121,5 @@ public class Interface extends JFrame {
 
     private void finalizar() {
         System.exit(0);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Interface();
-            }
-        });
     }
 }
