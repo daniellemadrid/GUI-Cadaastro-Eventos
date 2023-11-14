@@ -72,38 +72,58 @@ public class Interface extends JFrame {
     }
 
     private void cadastrarEvento() {
-        String codigo = codigoField.getText();
-        double latitude, longitude;
-        String dataRaw = dataField.getText();
-
         try {
-            latitude = Double.parseDouble(latitudeField.getText());
-            longitude = Double.parseDouble(longitudeField.getText());
-
-            if (codigo.isEmpty() || dataRaw.isEmpty()) {
-                throw new IllegalArgumentException("Código e Data são obrigatórios.");
-            }
+            String codigo = validarCampoNumerico(codigoField.getText(), "Código");
+            double latitude = Double.parseDouble(validarCampoNumerico(latitudeField.getText(), "Latitude"));
+            double longitude = Double.parseDouble(validarCampoNumerico(longitudeField.getText(), "Longitude"));
+            String data = validarFormatoData(dataField.getText());
 
             String codigoSemZeros = codigo.replaceFirst("^0+(?!$)", "");
-            java.util.Date dataUtil = new java.text.SimpleDateFormat("dd/MM/yyyy").parse(dataRaw);
-            String data = new java.text.SimpleDateFormat("dd/MM/yyyy").format(dataUtil);
 
             if (eventos.stream().anyMatch(evento -> codigoSemZeros.equals(evento.getCodigo()))) {
                 throw new IllegalArgumentException("Já existe um evento com o código indicado.");
             }
+            if (codigo.isEmpty() || data.isEmpty()) {
+                throw new IllegalArgumentException("Código e Data são obrigatórios.");
+            }
 
             eventos.add(new Evento(codigo, data, latitude, longitude));
             mensagemArea.setText("Evento cadastrado com sucesso.");
-        } catch (ParseException e) {
-            mensagemArea.setText("Erro: Formato de data inválido. Utilize o formato dd/MM/yyyy.");
-        } catch (NumberFormatException ex) {
-            mensagemArea.setText("Erro: Latitude e Longitude devem ser valores numéricos.");
-        } catch (IllegalArgumentException ex) {
-            mensagemArea.setText("Erro: " + ex.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            mensagemArea.setText("Erro: " + e.getMessage());
         }
     }
+
+    private String validarCampoNumerico(String valor, String nomeCampo) {
+        if (valor.isEmpty()) {
+            throw new IllegalArgumentException(nomeCampo + " é obrigatório.");
+        }
+
+        if (!valor.matches("\\d+")) {
+            throw new NumberFormatException(nomeCampo + " deve conter apenas números.");
+        }
+
+        return valor;
+    }
+
+    private String validarFormatoData(String valor) {
+        if (!valor.matches("\\d{2}/\\d{2}/\\d{4}")) {
+            throw new IllegalArgumentException("A data deve estar no formato dd/MM/yyyy.");
+        }
+
+        try {
+            java.util.Date dataUtil = new java.text.SimpleDateFormat("dd/MM/yyyy").parse(valor);
+            return new java.text.SimpleDateFormat("dd/MM/yyyy").format(dataUtil);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Formato de data inválido. Utilize o formato dd/MM/yyyy.");
+        }
+    }
+
+
+
+
+
+
 
 
     private void limparCampos() {
@@ -119,6 +139,8 @@ public class Interface extends JFrame {
             mensagemArea.setText("Lista de eventos está vazia.");
         } else {
             StringBuilder eventosString = new StringBuilder();
+            eventos.sort(Comparator.comparingInt(evento -> Integer.parseInt(evento.getCodigo())));
+
             for (Evento evento : eventos) {
                 eventosString.append(String.format(
                         "\nCódigo: %s\nData: %s\nLatitude: %s\nLongitude: %s\n",
@@ -131,4 +153,9 @@ public class Interface extends JFrame {
     private void finalizar() {
         System.exit(0);
     }
+
+    private boolean isCodigoValido(String codigo) {
+        return codigo.matches("^\\d+$");
+    }
+
 }
